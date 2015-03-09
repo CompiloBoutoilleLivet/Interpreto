@@ -11,21 +11,19 @@ ENDLINE [\n]+
 NUMBER [0-9]+
 LABEL "label-"
 
-%x COMMENT
 %%
 
-"/*" 			{BEGIN COMMENT;}
-<COMMENT>\n 		{line++;}
-<COMMENT>[^\*\/] 	{}
-<COMMENT>"*/" 	        {BEGIN INITIAL;}
-
-
 {WHITESPACE}    {};
-{ENDLINE} 		{line++;};
+{ENDLINE} 		{
+					line++; 
+					return tEND_LINE;
+				};
 "[$"			{return tBEGIN_ADDRESS;};
 "]"				{return tEND_ADDRESS;};
 {LABEL}			{return tBEGIN_LABEL;};
 {NUMBER}		{return tNUMBER;};
+":"				{return tLABEL_END;};
+","				{return tDELIMITEUR;};
 add 			{return tADD;};
 mul				{return tMUL;};
 sou				{return tSOU;};
