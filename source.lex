@@ -21,7 +21,10 @@ LABEL "label-"
 "[$"			{return tBEGIN_ADDRESS;};
 "]"				{return tEND_ADDRESS;};
 {LABEL}			{return tBEGIN_LABEL;};
-{NUMBER}		{return tNUMBER;};
+{NUMBER}		{
+					yylval.number = atoi(yytext);
+					return tNUMBER;
+				};
 ":"				{return tLABEL_END;};
 ","				{return tDELIMITEUR;};
 add 			{return tADD;};
