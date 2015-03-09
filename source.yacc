@@ -13,6 +13,12 @@ int yyerror (char *s);
 {
 }
 
+%token tADD tMUL tSOU tDIV
+%token tCOP tAFC
+%token tJMP tJMF
+%token tINF tSUP tEQU
+%token tPRI
+
 %start Start
 
 %%
