@@ -8,6 +8,8 @@ int line = 1;
 
 WHITESPACE [ \t]
 ENDLINE [\n]+
+NUMBER [0-9]+
+LABEL "label-"
 
 %x COMMENT
 %%
@@ -20,6 +22,10 @@ ENDLINE [\n]+
 
 {WHITESPACE}    {};
 {ENDLINE} 		{line++;};
+"[$"			{return tBEGIN_ADDRESS;};
+"]"				{return tEND_ADDRESS;};
+{LABEL}			{return tBEGIN_LABEL;};
+{NUMBER}		{return tNUMBER;};
 add 			{return tADD;};
 mul				{return tMUL;};
 sou				{return tSOU;};

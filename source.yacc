@@ -18,12 +18,13 @@ int yyerror (char *s);
 %token tJMP tJMF
 %token tINF tSUP tEQU
 %token tPRI
+%token tBEGIN_ADDRESS tEND_ADDRESS tBEGIN_LABEL tNUMBER
 
 %start Start
 
 %%
 
-Start : 
+Start : tADD tBEGIN_ADDRESS tNUMBER tEND_ADDRESS tBEGIN_LABEL tNUMBER tNUMBER
       ;
 
 %%
