@@ -20,6 +20,8 @@ lex.yy.c: source.lex y.tab.c
 y.tab.c: source.yacc
 	$(YACC) $(YACCFLAGS) source.yacc
 
+interpreto.o: lex.yy.c
+
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
