@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "lex.yy.h"
 #include "instructionmanager/instructions.h"
+#include "cpu.h"
 
 extern int line;
 extern int yydebug;
@@ -16,6 +17,12 @@ void print_usage(char *s)
     printf("\t -s \t\t enable symtab debug\n");
     printf("\t -f <filename>\t filename to parse\n");
     printf("\t\t\t if -f is not specified, stdin is parsed\n");
+}
+
+void interprete()
+{
+    struct cpu *cpu = cpu_init(instr_manager_get());
+    cpu_run(cpu);
 }
 
 int main(int argc, char **argv) {
@@ -77,6 +84,7 @@ int main(int argc, char **argv) {
     {
         printf("[+] Number of line(s) = %d\n", line);
     }
+    interprete();
 
 	return EXIT_SUCCESS;
 }
