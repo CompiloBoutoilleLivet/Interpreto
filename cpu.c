@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "instructionmanager/instructions.h"
@@ -27,11 +28,7 @@ void cpu_run(struct cpu *cpu)
 	{
 		current = cpu->pc;
 		cpu_exec_instr(cpu, current);
-
-		if(current->type != JMP_INSTR || current->type != JMF_INSTR)
-		{
-			cpu->pc = cpu->pc->next;
-		}
+		cpu->pc = cpu->pc->next;
 	}
 
 	for(i=0; i<MEM_SIZE; i+=4)
@@ -75,6 +72,16 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 
 		case PRI_INSTR:
 			printf("%d\n", cpu->memory[i->params[0]]);
+			break;
+
+		case LABEL_INSTR:
+			// do nothing :) it's a virtual instruction
+			break;
+
+		case JMP_INSTR:
+			printf("jmp %d\n", i->params[0]);
+			printf("%d\n", cpu->rom->label_count);
+			printf("%p\n", cpu->rom->label_tab[i->params[0]]);
 			break;
 
 	}
