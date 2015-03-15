@@ -25,6 +25,20 @@ void interprete()
     cpu_run(cpu);
 }
 
+void interprete_stepper()
+{
+    char buff[16];
+    struct cpu *cpu = cpu_init(instr_manager_get());
+
+    while(1)
+    {
+        instr_manager_print_instr(cpu->pc);
+        cpu_exec_instr(cpu, cpu->pc);
+        cpu->pc = cpu->pc->next;
+        fread(buff, 1, 1, stdin);
+    }
+}
+
 int main(int argc, char **argv) {
     int dflag = 0;
     int sflag = 0;
@@ -84,6 +98,7 @@ int main(int argc, char **argv) {
     {
         printf("[+] Number of line(s) = %d\n", line);
     }
+
     interprete();
 
 	return EXIT_SUCCESS;
