@@ -9,7 +9,7 @@ int line = 1;
 WHITESPACE [ \t]
 ENDLINE [\n]+
 NUMBER [0-9]+
-LABEL "label-"
+LABEL "label_"
 
 %%
 

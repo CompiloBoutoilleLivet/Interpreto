@@ -43,6 +43,7 @@ void cpu_run(struct cpu *cpu)
 
 void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 {
+
 	switch(i->type)
 	{
 
@@ -74,14 +75,46 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			printf("%d\n", cpu->memory[i->params[0]]);
 			break;
 
+		case INF_INSTR:
+			if(cpu->memory[i->params[1]] < cpu->memory[i->params[2]])
+			{
+				cpu->memory[i->params[0]] = 1;
+			} else {
+				cpu->memory[i->params[0]] = 0;
+			}
+			break;
+
+		case SUP_INSTR:
+			if(cpu->memory[i->params[1]] > cpu->memory[i->params[2]])
+			{
+				cpu->memory[i->params[0]] = 1;
+			} else {
+				cpu->memory[i->params[0]] = 0;
+			}
+			break;
+
+		case EQU_INSTR:
+			if(cpu->memory[i->params[1]] == cpu->memory[i->params[2]])
+			{
+				cpu->memory[i->params[0]] = 1;
+			} else {
+				cpu->memory[i->params[0]] = 0;
+			}
+			break;
+
 		case LABEL_INSTR:
 			// do nothing :) it's a virtual instruction
 			break;
 
 		case JMP_INSTR:
-			printf("jmp %d\n", i->params[0]);
-			printf("%d\n", cpu->rom->label_count);
-			printf("%p\n", cpu->rom->label_tab[i->params[0]]);
+			cpu->pc = cpu->rom->label_tab[i->params[0]-1];
+			break;
+
+		case JMF_INSTR:
+			if(cpu->memory[i->params[0]] == 0)
+			{
+				cpu->pc = cpu->rom->label_tab[i->params[1]-1];
+			}
 			break;
 
 	}
