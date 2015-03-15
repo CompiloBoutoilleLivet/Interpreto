@@ -14,21 +14,19 @@ void print_usage(char *s)
     printf("usage : %s \n", s);
     printf("\t -h \t\t print this help\n");
     printf("\t -d \t\t enable parser debug\n");
-    printf("\t -s \t\t enable symtab debug\n");
     printf("\t -f <filename>\t filename to parse\n");
     printf("\t\t\t if -f is not specified, stdin is parsed\n");
+    printf("\t -m \t\t enable dumping memory\n");
 }
 
-void interprete()
+void interprete(struct cpu *cpu)
 {
-    struct cpu *cpu = cpu_init(instr_manager_get());
     cpu_run(cpu);
 }
 
-void interprete_stepper()
+void interprete_stepper(struct cpu *cpu)
 {
     char buff[16];
-    struct cpu *cpu = cpu_init(instr_manager_get());
 
     while(1)
     {
@@ -39,14 +37,16 @@ void interprete_stepper()
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     int dflag = 0;
-    int sflag = 0;
+    int mflag = 0;
     char *filename_in = NULL;
     FILE *fin = NULL;
     int c = 0;
+    struct cpu *cpu = NULL;
 
-    while((c = getopt(argc, argv, "hd::s::f:S:")) != -1)
+    while((c = getopt(argc, argv, "hd::m::f:")) != -1)
     {
         switch(c)
         {
@@ -59,8 +59,8 @@ int main(int argc, char **argv) {
                 dflag = 1;
                 break;
 
-            case 's': // symbol debug
-                sflag = 1;
+            case 'm': // memory
+                mflag = 1;
                 break;
 
             case 'f': // stdin
@@ -94,12 +94,15 @@ int main(int argc, char **argv) {
     instr_manager_init();
 	yyparse();
 
-    if(sflag)
-    {
-        printf("[+] Number of line(s) = %d\n", line);
-    }
+    printf("[+] Execute program ... \n");
+    cpu = cpu_init(instr_manager_get());
+    interprete(cpu);
 
-    interprete();
+    if(mflag)
+    {
+        printf("[+] Memory dump at the end : \n");
+        cpu_memdump(cpu);
+    }
 
 	return EXIT_SUCCESS;
 }

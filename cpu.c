@@ -22,7 +22,6 @@ struct cpu * cpu_init(struct instr_manager *man)
 
 void cpu_run(struct cpu *cpu)
 {
-	int i;
 	struct instr *current;
 	while(cpu->pc != NULL)
 	{
@@ -31,6 +30,11 @@ void cpu_run(struct cpu *cpu)
 		cpu->pc = cpu->pc->next;
 	}
 
+}
+
+void cpu_memdump(struct cpu *cpu)
+{
+	int i;
 	for(i=0; i<MEM_SIZE; i+=4)
 	{
 		printf("%08x : %08X", i, cpu->memory[i]);
@@ -38,7 +42,6 @@ void cpu_run(struct cpu *cpu)
 		printf(" %08X", cpu->memory[i+2]);
 		printf(" %08X\n", cpu->memory[i+3]);
 	}
-
 }
 
 void cpu_exec_instr(struct cpu *cpu, struct instr *i)
