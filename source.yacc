@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "lex.yy.h"
+#include "instructionmanager/label.h"
 #include "instructionmanager/instructions.h"
 
 extern int line;
@@ -13,6 +14,7 @@ int yyerror (char *s);
 %union
 {
     int number;
+    char *id;
 }
 
 %token tADD tMUL tSOU tDIV
@@ -20,12 +22,12 @@ int yyerror (char *s);
 %token tJMP tJMF
 %token tINF tSUP tEQU
 %token tPRI
-%token tBEGIN_ADDRESS tEND_ADDRESS tBEGIN_LABEL tLABEL_END tEND_LINE tDELIMITEUR
+%token tBEGIN_ADDRESS tEND_ADDRESS tLABEL_END tEND_LINE tDELIMITEUR
+%token <id> tID
 %token <number> tNUMBER
 
 %start Operations
 %type <number> Address
-%type <number> Label
 
 %%
 
@@ -51,15 +53,10 @@ Address : tBEGIN_ADDRESS tNUMBER tEND_ADDRESS
         }
         ;
 
-Label : tBEGIN_LABEL tNUMBER
+DeclareLabel : tID tLABEL_END
         {
-                $$ = $2;
-        }
-        ;
-
-DeclareLabel : Label tLABEL_END
-        {
-                instr_emit_label($1);
+                int l = label_add($1);
+                instr_emit_label(l);
         }
         ;
 
@@ -99,15 +96,15 @@ Affectation : tAFC Address tDELIMITEUR tNUMBER
         }
         ;
 
-Saut : tJMP Label
+Saut : tJMP tID
         {
-                instr_emit_jmp($2);
+                instr_emit_jmp(label_table_hash_string($2));
         }
         ;
 
-SautConditionel : tJMF Address tDELIMITEUR Label
+SautConditionel : tJMF Address tDELIMITEUR tID
         {
-                instr_emit_jmf($2, $4);
+                instr_emit_jmf($2, label_table_hash_string($4));
         }
         ;
 

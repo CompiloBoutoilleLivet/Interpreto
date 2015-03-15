@@ -9,7 +9,7 @@ int line = 1;
 WHITESPACE [ \t]
 ENDLINE [\n]+
 NUMBER [0-9]+
-LABEL "label_"
+ID [a-zA-Z][a-zA-Z0-9_]*
 
 %%
 
@@ -20,7 +20,6 @@ LABEL "label_"
 				};
 "[$"			{return tBEGIN_ADDRESS;};
 "]"				{return tEND_ADDRESS;};
-{LABEL}			{return tBEGIN_LABEL;};
 {NUMBER}		{
 					yylval.number = atoi(yytext);
 					return tNUMBER;
@@ -39,5 +38,10 @@ inf				{return tINF;};
 sup				{return tSUP;};
 equ				{return tEQU;};
 pri				{return tPRI;};
+{ID}			{
+					yylval.id = strdup(yytext);
+					return tID;
+				};
+
 
 %%

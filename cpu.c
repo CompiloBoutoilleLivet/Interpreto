@@ -107,13 +107,13 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			break;
 
 		case JMP_INSTR:
-			cpu->pc = cpu->rom->label_tab[i->params[0]];
+		cpu->pc = label_table_get_label(i->params[0])->instr;
 			break;
 
 		case JMF_INSTR:
 			if(cpu->memory[i->params[0]] == 0)
 			{
-				cpu->pc = cpu->rom->label_tab[i->params[1]];
+				cpu->pc = label_table_get_label(i->params[1])->instr;
 			}
 			break;
 
