@@ -65,9 +65,14 @@ void interprete_interactive(struct cpu *cpu)
             }
             else if(strcmp(line, "s") == 0)
             {
-                instr_manager_print_instr(cpu->pc);
-                cpu_exec_instr(cpu, cpu->pc);
-                cpu->pc = cpu->pc->next;
+                if(cpu->pc == NULL)
+                {
+                    printf("pc is at the end - do 'reset' to reset the state of the cpu\n");
+                } else {
+                    instr_manager_print_instr(cpu->pc);
+                    cpu_exec_instr(cpu, cpu->pc);
+                    cpu->pc = cpu->pc->next;
+                }
             }      
             else if(strcmp(line, "q") == 0)
             {
