@@ -20,6 +20,17 @@ struct cpu * cpu_init(struct instr_manager *man)
 	return cpu;
 }
 
+void cpu_reset(struct cpu *cpu)
+{
+	int i;
+	cpu->pc = cpu->rom->first;
+
+	for(i=0; i<MEM_SIZE; i++)
+	{
+		cpu->memory[i] = 0;
+	}
+}
+
 void cpu_run(struct cpu *cpu)
 {
 	struct instr *current;

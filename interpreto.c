@@ -9,6 +9,8 @@ extern int line;
 extern int yydebug;
 void yyparse();
 
+#define LINE_SIZE 32
+
 void print_usage(char *s)
 {
     printf("usage : %s \n", s);
@@ -17,6 +19,7 @@ void print_usage(char *s)
     printf("\t -f <filename>\t filename to parse\n");
     printf("\t\t\t if -f is not specified, stdin is parsed\n");
     printf("\t -m \t\t enable dumping memory\n");
+    printf("\t -i \t\t enable interactive mode\n");
 }
 
 void interprete(struct cpu *cpu)
@@ -24,29 +27,72 @@ void interprete(struct cpu *cpu)
     cpu_run(cpu);
 }
 
-void interprete_stepper(struct cpu *cpu)
+void interprete_interactive(struct cpu *cpu)
 {
-    char buff[16];
+    char line[LINE_SIZE] = {0};
 
-    while(1)
+    do
     {
-        instr_manager_print_instr(cpu->pc);
-        cpu_exec_instr(cpu, cpu->pc);
-        cpu->pc = cpu->pc->next;
-        fread(buff, 1, 1, stdin);
-    }
+        if(strlen(line) != 0 && line[0] != '\n')
+        {
+            line[strlen(line)-1] = '\0';
+            
+            if(strcmp(line, "help") == 0)
+            {
+                printf("commands :\n");
+                printf("r \t run de program\n");
+                printf("reset \t reset the cpu state\n");
+                printf("disas \t print instructions of program\n");
+                printf("q \t quit\n");
+            }
+            else if(strcmp(line, "r") == 0)
+            {
+                if(cpu->pc == NULL)
+                {
+                    printf("pc is at the end - do 'reset' to reset the state of the cpu\n");
+                } else {
+                    cpu_run(cpu);
+                }
+            }
+            else if(strcmp(line, "reset") == 0)
+            {
+                cpu_reset(cpu);
+                printf("cpu reset !\n");
+            }
+            else if(strcmp(line, "disas") == 0)
+            {
+                instr_manager_print_textual();
+            }
+            else if(strcmp(line, "s") == 0)
+            {
+                instr_manager_print_instr(cpu->pc);
+                cpu_exec_instr(cpu, cpu->pc);
+                cpu->pc = cpu->pc->next;
+            }      
+            else if(strcmp(line, "q") == 0)
+            {
+                printf("bye !\n");
+                break;
+            } else {
+                printf("'%s' command not found\n", line);
+            }
+        }
+
+        printf("(interpreto $) ");
+    } while((fgets(line, LINE_SIZE, stdin)) != NULL);
 }
 
 int main(int argc, char **argv)
 {
     int dflag = 0;
     int mflag = 0;
+    int iflag = 0;
     char *filename_in = NULL;
     FILE *fin = NULL;
     int c = 0;
     struct cpu *cpu = NULL;
 
-    while((c = getopt(argc, argv, "hd::m::f:")) != -1)
+    while((c = getopt(argc, argv, "hd::m::i::f:")) != -1)
     {
         switch(c)
         {
@@ -61,6 +107,10 @@ int main(int argc, char **argv)
 
             case 'm': // memory
                 mflag = 1;
+                break;
+
+            case 'i': // interactive
+                iflag = 1;
                 break;
 
             case 'f': // stdin
@@ -94,9 +144,15 @@ int main(int argc, char **argv)
     instr_manager_init();
 	yyparse();
 
-    printf("[+] Execute program ... \n");
     cpu = cpu_init(instr_manager_get());
-    interprete(cpu);
+    if(iflag)
+    {
+        interprete_interactive(cpu);
+    } else {
+        printf("[+] Execute program ... \n");
+        interprete(cpu);
+    }
+    
 
     if(mflag)
     {
