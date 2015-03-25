@@ -43,6 +43,7 @@ void interprete_interactive(struct cpu *cpu)
                 printf("r \t run de program\n");
                 printf("reset \t reset the cpu state\n");
                 printf("disas \t print instructions of program\n");
+                printf("dump \t dump the memory\n");
                 printf("q \t quit\n");
             }
             else if(strcmp(line, "r") == 0)
@@ -73,7 +74,11 @@ void interprete_interactive(struct cpu *cpu)
                     cpu_exec_instr(cpu, cpu->pc);
                     cpu->pc = cpu->pc->next;
                 }
-            }      
+            }
+            else if (strcmp(line, "dump") == 0)
+            {
+                cpu_memdump(cpu);
+            }
             else if(strcmp(line, "q") == 0)
             {
                 printf("bye !\n");
