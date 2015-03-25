@@ -62,7 +62,7 @@ void interprete_interactive(struct cpu *cpu)
             }
             else if(strcmp(line, "disas") == 0)
             {
-                instr_manager_print_textual();
+                instr_manager_print_textual(1);
             }
             else if(strcmp(line, "s") == 0)
             {
@@ -70,7 +70,7 @@ void interprete_interactive(struct cpu *cpu)
                 {
                     printf("pc is at the end - do 'reset' to reset the state of the cpu\n");
                 } else {
-                    instr_manager_print_instr(cpu->pc);
+                    instr_manager_print_instr(cpu->pc, 1);
                     cpu_exec_instr(cpu, cpu->pc);
                     cpu->pc = cpu->pc->next;
                 }
