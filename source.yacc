@@ -22,6 +22,7 @@ int yyerror (char *s);
 %token tJMP tJMF
 %token tINF tSUP tEQU
 %token tPRI
+%token tSTOP
 %token tBEGIN_ADDRESS tEND_ADDRESS tLABEL_END tEND_LINE tDELIMITEUR
 %token <id> tID
 %token <number> tNUMBER
@@ -45,6 +46,7 @@ Operations : /* empty */
             | Operations ComparaisonEq tEND_LINE 
             | Operations Imprimer tEND_LINE 
             | Operations DeclareLabel tEND_LINE
+            | Operations Stop tEND_LINE
             ;
 
 Address : tBEGIN_ADDRESS tNUMBER tEND_ADDRESS
@@ -131,6 +133,11 @@ Imprimer : tPRI Address
                 instr_emit_pri($2);
         }
         ;
+
+Stop : tSTOP
+     {
+            instr_emit_stop();
+     };
 
 %%
 

@@ -38,6 +38,7 @@ inf				{return tINF;};
 sup				{return tSUP;};
 equ				{return tEQU;};
 pri				{return tPRI;};
+stop			{return tSTOP;};
 {ID}			{
 					yylval.id = strdup(yytext);
 					return tID;

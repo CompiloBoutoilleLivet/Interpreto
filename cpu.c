@@ -121,7 +121,7 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			break;
 
 		case JMP_INSTR:
-		cpu->pc = label_table_get_label(i->params[0])->instr;
+			cpu->pc = label_table_get_label(i->params[0])->instr;
 			break;
 
 		case JMF_INSTR:
@@ -129,6 +129,10 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			{
 				cpu->pc = label_table_get_label(i->params[1])->instr;
 			}
+			break;
+
+		case STOP_INSTR:
+			// stop everything !!!
 			break;
 
 	}
