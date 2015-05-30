@@ -8,7 +8,7 @@ int line = 1;
 
 WHITESPACE [ \t]
 ENDLINE [\n]+
-NUMBER [0-9]+
+NUMBER [-]*[0-9]+
 ID [a-zA-Z][a-zA-Z0-9_]*
 
 %%
@@ -18,14 +18,16 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 					line++; 
 					return tEND_LINE;
 				};
-"[$"			{return tBEGIN_ADDRESS;};
-"]"				{return tEND_ADDRESS;};
 {NUMBER}		{
 					yylval.number = atoi(yytext);
 					return tNUMBER;
 				};
+"+"				{return tPLUS;};
+"["				{return tBRACKET_OPEN;};
+"]"				{return tBRACKET_CLOSE;};
 ":"				{return tLABEL_END;};
-","				{return tDELIMITEUR;};
+","				{return tCOMA;};
+"$"				{return tDOLLAR;};
 add 			{return tADD;};
 mul				{return tMUL;};
 sou				{return tSOU;};
@@ -38,7 +40,11 @@ inf				{return tINF;};
 sup				{return tSUP;};
 equ				{return tEQU;};
 pri				{return tPRI;};
+call			{return tCALL;};
+leave			{return tLEAVE;};
+ret 			{return tRET;};
 stop			{return tSTOP;};
+push			{return tPUSH;};
 {ID}			{
 					yylval.id = strdup(yytext);
 					return tID;

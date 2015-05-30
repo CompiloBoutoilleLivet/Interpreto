@@ -17,127 +17,99 @@ int yyerror (char *s);
     char *id;
 }
 
-%token tADD tMUL tSOU tDIV
-%token tCOP tAFC
-%token tJMP tJMF
-%token tINF tSUP tEQU
-%token tPRI
-%token tSTOP
-%token tBEGIN_ADDRESS tEND_ADDRESS tLABEL_END tEND_LINE tDELIMITEUR
+%token tAFC tCALL tCOMA tSTOP
+%token tPUSH tCOP tBRACKET_OPEN tBRACKET_CLOSE
+%token tPLUS tEQU tLEAVE tRET
+%token tADD tEND_LINE tLABEL_END tJMP
+%token tJMF tSOU tINF tPRI
+%token tDOLLAR
 %token <id> tID
 %token <number> tNUMBER
 
+%token tMUL tDIV tSUP 
+
 %start Operations
-%type <number> Address
 
 %%
 
 Operations : /* empty */
-            | Operations Addition tEND_LINE 
-            | Operations Multiplication tEND_LINE 
-            | Operations Soustraction tEND_LINE 
-            | Operations Division tEND_LINE 
-            | Operations Copie tEND_LINE 
-            | Operations Affectation tEND_LINE 
-            | Operations Saut tEND_LINE 
-            | Operations SautConditionel tEND_LINE 
-            | Operations ComparaisonInf tEND_LINE 
-            | Operations ComparaisonSup tEND_LINE 
-            | Operations ComparaisonEq tEND_LINE 
-            | Operations Imprimer tEND_LINE 
-            | Operations DeclareLabel tEND_LINE
+            | Operations Afc tEND_LINE
+            | Operations Call tEND_LINE
             | Operations Stop tEND_LINE
+            | Operations DeclareLabel tEND_LINE
+            | Operations Push tEND_LINE
+            | Operations Cop tEND_LINE
+            | Operations Sou tEND_LINE
+            | Operations Add tEND_LINE
+            | Operations Mul tEND_LINE
+            | Operations Div tEND_LINE
+            | Operations Equ tEND_LINE
+            | Operations Inf tEND_LINE
+            | Operations Sup tEND_LINE
+            | Operations Jmf tEND_LINE
+            | Operations Jmp tEND_LINE
+            | Operations Leave tEND_LINE
+            | Operations Ret tEND_LINE
+            | Operations Pri tEND_LINE
             ;
 
-Address : tBEGIN_ADDRESS tNUMBER tEND_ADDRESS
-        {
-                $$ = $2;
-        }
-        ;
-
+RegOffset : tBRACKET_OPEN tID tPLUS tNUMBER tBRACKET_CLOSE
+Reg : tID
+Label : tID 
 DeclareLabel : tID tLABEL_END
-        {
-                int l = label_add($1);
-                instr_emit_label(l);
-        }
-        ;
+Address : tBRACKET_OPEN tDOLLAR tNUMBER tBRACKET_CLOSE
 
-Addition : tADD Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_add($2, $4, $6);
-        }
-        ;
+Afc  : tAFC Address tCOMA tNUMBER
+     | tAFC Reg tCOMA tNUMBER
+     | tAFC Reg tCOMA RegOffset
+     | tAFC RegOffset tCOMA tNUMBER
+     | tAFC RegOffset tCOMA Reg
 
-Multiplication : tMUL Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_mul($2, $4, $6);
-        }
-        ;
+Cop :   tCOP Address tCOMA Address
+    | tCOP Reg tCOMA Reg
+    | tCOP RegOffset tCOMA RegOffset
 
-Soustraction : tSOU Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_sou($2, $4, $6);
-        }
-        ;
+Push : tPUSH Reg
+     | tPUSH RegOffset
 
-Division : tDIV Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_div($2, $4, $6);
-        }
-        ;
-
-Copie : tCOP Address tDELIMITEUR Address 
-        {
-                instr_emit_cop($2, $4);
-        }
-        ;
-
-Affectation : tAFC Address tDELIMITEUR tNUMBER 
-        {
-                instr_emit_afc($2, $4);
-        }
-        ;
-
-Saut : tJMP tID
-        {
-                instr_emit_jmp(label_table_hash_string($2));
-        }
-        ;
-
-SautConditionel : tJMF Address tDELIMITEUR tID
-        {
-                instr_emit_jmf($2, label_table_hash_string($4));
-        }
-        ;
-
-ComparaisonSup : tSUP Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_sup($2, $4, $6);
-        }
-        ;
-
-ComparaisonInf : tINF Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_inf($2, $4, $6);
-        }
-        ;
-
-ComparaisonEq : tEQU Address tDELIMITEUR Address tDELIMITEUR Address
-        {
-                instr_emit_equ($2, $4, $6);
-        }
-        ;
-
-Imprimer : tPRI Address 
-        {
-                instr_emit_pri($2);
-        }
-        ;
+Call : tCALL Label
+Leave : tLEAVE
+Ret : tRET
 
 Stop : tSTOP
-     {
-            instr_emit_stop();
-     };
+
+Equ : tEQU RegOffset tCOMA RegOffset tCOMA RegOffset
+    | tEQU Address tCOMA Address tCOMA Address
+
+Inf : tINF RegOffset tCOMA RegOffset tCOMA RegOffset
+    | tINF Address tCOMA Address tCOMA Address
+
+Sup : tSUP RegOffset tCOMA RegOffset tCOMA RegOffset
+    | tSUP Address tCOMA Address tCOMA Address
+
+
+Jmp : tJMP Label
+Jmf : tJMF RegOffset tCOMA Label
+    | tJMF Address tCOMA Label
+
+Sou : tSOU Address tCOMA Address tCOMA Address
+    | tSOU Reg tCOMA Reg tCOMA tNUMBER
+    | tSOU RegOffset tCOMA RegOffset tCOMA RegOffset
+
+Add : tADD Address tCOMA Address tCOMA Address
+    | tADD Reg tCOMA Reg tCOMA tNUMBER
+    | tADD RegOffset tCOMA RegOffset tCOMA RegOffset
+
+Div : tDIV Address tCOMA Address tCOMA Address
+    | tDIV Reg tCOMA Reg tCOMA tNUMBER
+    | tDIV RegOffset tCOMA RegOffset tCOMA RegOffset
+
+Mul : tMUL Address tCOMA Address tCOMA Address
+    | tMUL Reg tCOMA Reg tCOMA tNUMBER
+    | tMUL RegOffset tCOMA RegOffset tCOMA RegOffset
+
+Pri : tPRI Address
+    | tPRI RegOffset
 
 %%
 
