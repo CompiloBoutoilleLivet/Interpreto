@@ -1,5 +1,5 @@
-	afc bp, 255
-	afc sp, 255
+	afc bp, 0
+	afc sp, 0
 	call main
 	stop
 fibo:
