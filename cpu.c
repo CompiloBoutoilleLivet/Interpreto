@@ -46,6 +46,7 @@ void cpu_run(struct cpu *cpu)
 		cpu_exec_instr(cpu, current);
 		cpu->pc = cpu->pc->next;
 		cpu_register_dump(cpu);
+		cpu_memdump(cpu);
 	}
 
 }
@@ -71,6 +72,12 @@ void cpu_register_dump(struct cpu *cpu)
 	}
 }
 
+void cpu_push_stack(struct cpu *cpu, int v)
+{
+	cpu->memory[cpu->regs[SP_REG]] = v;
+	cpu->regs[SP_REG]--;
+}
+
 void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 {
 
@@ -81,12 +88,26 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]];
 			break;
 
+		case COP_REG_INSTR:
+			cpu->regs[i->params[0]] = cpu->regs[i->params[1]];
+			break;
+
+		// case COP_REL_REG_INSTR:
+		// 	cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = cpu->memory[cpu->regs[i->params[2]] + i->params[3]];
+		// 	break;
+
 		case AFC_INSTR:
 			cpu->memory[i->params[0]] = i->params[1];
 			break;
 
 		case AFC_REG_INSTR:
 			cpu->regs[i->params[0]] = i->params[1];
+			break;
+
+		case AFC_REL_REG_INSTR:
+			printf("%d\n", cpu->regs[i->params[0]] + i->params[1]);
+			printf("%d\n", cpu->memory[cpu->regs[i->params[0]] + i->params[1]]);
+			cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = i->params[2];
 			break;
 
 		case ADD_INSTR:
@@ -99,6 +120,10 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 
 		case SOU_INSTR:
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] - cpu->memory[i->params[2]];
+			break;
+
+		case SOU_REG_VAL_INSTR:
+			cpu->regs[i->params[0]] = cpu->regs[i->params[1]] - i->params[2];
 			break;
 
 		case DIV_INSTR:
@@ -149,6 +174,15 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			{
 				cpu->pc = label_table_get_label(i->params[1])->instr;
 			}
+			break;
+
+		case PUSH_REG_INSTR:
+			cpu_push_stack(cpu, cpu->regs[i->params[0]]);
+			break;
+
+		case CALL_INSTR:
+			cpu_push_stack(cpu, cpu->pc->instr_number+1);
+			cpu->pc = label_table_get_label(i->params[0])->instr;
 			break;
 
 		case STOP_INSTR:
