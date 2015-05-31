@@ -4,7 +4,7 @@ LEXFLAGS = --header-file=lex.yy.h
 YACC = yacc
 YACCFLAGS = -d --debug --verbose
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall 
 LDFLAGS = -lfl -ly
 
 SRC = $(wildcard *.c) $(wildcard instructionmanager/*.c) lex.yy.c y.tab.c

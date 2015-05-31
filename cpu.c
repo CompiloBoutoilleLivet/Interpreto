@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "instructionmanager/instructions.h"
 #include "cpu.h"
 
@@ -11,6 +12,7 @@ struct cpu * cpu_init(struct instr_manager *man)
 
 	cpu->rom = man;
 	cpu->pc = man->first;
+	cpu->stop = 0;
 
 	for(i=0; i<MEM_SIZE; i++)
 	{
@@ -39,14 +41,13 @@ void cpu_reset(struct cpu *cpu)
 void cpu_run(struct cpu *cpu)
 {
 	struct instr *current;
-	while(cpu->pc != NULL)
+	while(cpu->pc != NULL && cpu->stop == 0)
 	{
 		current = cpu->pc;
-		instr_manager_print_instr(current, 1);
 		cpu_exec_instr(cpu, current);
 		cpu->pc = cpu->pc->next;
-		cpu_register_dump(cpu);
-		cpu_memdump(cpu);
+		assert(cpu->regs[SP_REG] <= MEM_SIZE);
+		assert(cpu->regs[BP_REG] <= MEM_SIZE);
 	}
 
 }
@@ -75,11 +76,19 @@ void cpu_register_dump(struct cpu *cpu)
 void cpu_push_stack(struct cpu *cpu, int v)
 {
 	cpu->memory[cpu->regs[SP_REG]] = v;
+	cpu->regs[SP_REG]++;
+}
+
+int cpu_pop_stack(struct cpu *cpu)
+{
+	int ret = cpu->memory[cpu->regs[SP_REG]];
 	cpu->regs[SP_REG]--;
+	return ret;
 }
 
 void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 {
+	int reg, val1, val2;
 
 	switch(i->type)
 	{
@@ -92,9 +101,9 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->regs[i->params[0]] = cpu->regs[i->params[1]];
 			break;
 
-		// case COP_REL_REG_INSTR:
-		// 	cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = cpu->memory[cpu->regs[i->params[2]] + i->params[3]];
-		// 	break;
+		case COP_REL_REG_INSTR:
+			cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = cpu->memory[cpu->regs[i->params[2]] + i->params[3]];
+			break;
 
 		case AFC_INSTR:
 			cpu->memory[i->params[0]] = i->params[1];
@@ -105,13 +114,30 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			break;
 
 		case AFC_REL_REG_INSTR:
-			printf("%d\n", cpu->regs[i->params[0]] + i->params[1]);
-			printf("%d\n", cpu->memory[cpu->regs[i->params[0]] + i->params[1]]);
 			cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = i->params[2];
+			break;
+
+		case AFC_REG_MEM_INSTR:
+			cpu->regs[i->params[0]] = cpu->memory[cpu->regs[i->params[1]] + i->params[2]];
+			break;
+
+		case AFC_MEM_REG_INSTR:
+			cpu->memory[cpu->regs[i->params[0]] + i->params[1]] = cpu->regs[i->params[2]];
 			break;
 
 		case ADD_INSTR:
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] + cpu->memory[i->params[2]];
+			break;
+
+		case ADD_REG_VAL_INSTR:
+			cpu->regs[i->params[0]] = cpu->regs[i->params[1]] + i->params[2];
+			break;
+
+		case ADD_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			cpu->memory[reg + i->params[1]] = val1 + val2;
 			break;
 
 		case MUL_INSTR:
@@ -126,6 +152,11 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->regs[i->params[0]] = cpu->regs[i->params[1]] - i->params[2];
 			break;
 
+		case SOU_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			cpu->memory[reg + i->params[1]] = cpu->memory[reg + i->params[2]] - cpu->memory[reg + i->params[3]];
+			break;
+
 		case DIV_INSTR:
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] / cpu->memory[i->params[2]];
 			break;
@@ -134,12 +165,28 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			printf("%d\n", cpu->memory[i->params[0]]);
 			break;
 
+		case PRI_REL_REG_INSTR:
+			printf("%d\n", cpu->memory[cpu->regs[i->params[0]] + i->params[1]]);
+			break;
+
 		case INF_INSTR:
 			if(cpu->memory[i->params[1]] < cpu->memory[i->params[2]])
 			{
 				cpu->memory[i->params[0]] = 1;
 			} else {
 				cpu->memory[i->params[0]] = 0;
+			}
+			break;
+
+		case INF_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			if(val1 < val2)
+			{
+				cpu->memory[reg + i->params[1]] = 1;
+			} else {
+				cpu->memory[reg + i->params[1]] = 0;
 			}
 			break;
 
@@ -161,6 +208,18 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			}
 			break;
 
+		case EQU_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			if(val1 == val2)
+			{
+				cpu->memory[reg + i->params[1]] = 1;
+			} else {
+				cpu->memory[reg + i->params[1]] = 0;
+			}
+			break;
+
 		case LABEL_INSTR:
 			// do nothing :) it's a virtual instruction
 			break;
@@ -176,6 +235,18 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			}
 			break;
 
+		case JMF_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			if(cpu->memory[reg + i->params[1]] == 0)
+			{
+				cpu->pc = label_table_get_label(i->params[2])->instr;
+			}
+			break;
+
+		case PUSH_REL_REG_INSTR:
+			cpu_push_stack(cpu, cpu->memory[cpu->regs[i->params[0]] + i->params[1]]);
+			break;
+
 		case PUSH_REG_INSTR:
 			cpu_push_stack(cpu, cpu->regs[i->params[0]]);
 			break;
@@ -185,8 +256,20 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->pc = label_table_get_label(i->params[0])->instr;
 			break;
 
+		case LEAVE_INSTR:
+
+			cpu->regs[SP_REG] = cpu->regs[BP_REG];
+			cpu_pop_stack(cpu);
+			cpu->regs[BP_REG] = cpu_pop_stack(cpu);
+			break;
+
+		case RET_INSTR:
+			val1 = cpu_pop_stack(cpu);
+			cpu->pc = instr_get_instr_by_num(val1-1);
+			break;
+
 		case STOP_INSTR:
-			// stop everything !!!
+			cpu->stop = 1;
 			break;
 
 		default:

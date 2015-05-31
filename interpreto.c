@@ -79,6 +79,10 @@ void interprete_interactive(struct cpu *cpu)
             {
                 cpu_memdump(cpu);
             }
+            else if (strcmp(line, "regs") == 0)
+            {
+                cpu_register_dump(cpu);
+            }
             else if(strcmp(line, "q") == 0)
             {
                 printf("bye !\n");
