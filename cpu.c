@@ -31,6 +31,7 @@ void cpu_reset(struct cpu *cpu)
 {
 	int i;
 	cpu->pc = cpu->rom->first;
+	cpu->stop = 0;
 
 	for(i=0; i<MEM_SIZE; i++)
 	{

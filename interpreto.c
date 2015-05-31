@@ -44,6 +44,7 @@ void interprete_interactive(struct cpu *cpu)
                 printf("reset \t reset the cpu state\n");
                 printf("disas \t print instructions of program\n");
                 printf("dump \t dump the memory\n");
+                printf("regs \t dump registers\n");
                 printf("q \t quit\n");
             }
             else if(strcmp(line, "r") == 0)
@@ -51,6 +52,9 @@ void interprete_interactive(struct cpu *cpu)
                 if(cpu->pc == NULL)
                 {
                     printf("pc is at the end - do 'reset' to reset the state of the cpu\n");
+                } else if(cpu->stop != 0)
+                {
+                    printf("cpu is stopped\n");
                 } else {
                     cpu_run(cpu);
                 }
