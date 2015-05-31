@@ -1,7 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
-#define MEM_SIZE 65535
+#define MEM_SIZE 1024
 #define NUM_REG 3
 
 struct cpu {
