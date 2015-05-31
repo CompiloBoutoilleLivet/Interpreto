@@ -145,6 +145,17 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] * cpu->memory[i->params[2]];
 			break;
 
+		case MUL_REG_VAL_INSTR:
+			cpu->regs[i->params[0]] = cpu->regs[i->params[1]] * i->params[2];
+			break;
+
+		case MUL_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			cpu->memory[reg + i->params[1]] = val1 * val2;
+			break;
+
 		case SOU_INSTR:
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] - cpu->memory[i->params[2]];
 			break;
@@ -160,6 +171,17 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 
 		case DIV_INSTR:
 			cpu->memory[i->params[0]] = cpu->memory[i->params[1]] / cpu->memory[i->params[2]];
+			break;
+
+		case DIV_REG_VAL_INSTR:
+			cpu->regs[i->params[0]] = cpu->regs[i->params[1]] / i->params[2];
+			break;
+
+		case DIV_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			cpu->memory[reg + i->params[1]] = val1 / val2;
 			break;
 
 		case PRI_INSTR:
@@ -197,6 +219,18 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 				cpu->memory[i->params[0]] = 1;
 			} else {
 				cpu->memory[i->params[0]] = 0;
+			}
+			break;
+
+		case SUP_REL_REG_INSTR:
+			reg = cpu->regs[i->params[0]];
+			val1 = cpu->memory[reg + i->params[2]];
+			val2 = cpu->memory[reg + i->params[3]];
+			if(val1 < val2)
+			{
+				cpu->memory[reg + i->params[1]] = 1;
+			} else {
+				cpu->memory[reg + i->params[1]] = 0;
 			}
 			break;
 
@@ -244,12 +278,20 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			}
 			break;
 
+		case PUSH_INSTR:
+			cpu_push_stack(cpu, i->params[0]);
+			break;
+
 		case PUSH_REL_REG_INSTR:
 			cpu_push_stack(cpu, cpu->memory[cpu->regs[i->params[0]] + i->params[1]]);
 			break;
 
 		case PUSH_REG_INSTR:
 			cpu_push_stack(cpu, cpu->regs[i->params[0]]);
+			break;
+
+		case POP_INSTR:
+			printf("flemme :)\n");
 			break;
 
 		case CALL_INSTR:
@@ -273,10 +315,10 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 			cpu->stop = 1;
 			break;
 
-		default:
-			printf("Unknown instruction\n");
-			exit(EXIT_FAILURE);
-			break;
+		// default:
+		// 	printf("Unknown instruction\n");
+		// 	exit(EXIT_FAILURE);
+		// 	break;
 
 	}
 }
