@@ -2,11 +2,13 @@
 #define CPU_H
 
 #define MEM_SIZE 255
+#define NUM_REG 3
 
 struct cpu {
 	struct instr_manager *rom;
 	struct instr *pc;
 	int memory[MEM_SIZE];
+	int regs[NUM_REG];
 };
 
 struct cpu *cpu_init(struct instr_manager *man);

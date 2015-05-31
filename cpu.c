@@ -17,6 +17,11 @@ struct cpu * cpu_init(struct instr_manager *man)
 		cpu->memory[i] = 0;
 	}
 
+	for(i=0; i<NUM_REG; i++)
+	{
+		cpu->regs[i] = 0;
+	}
+
 	return cpu;
 }
 
@@ -37,8 +42,10 @@ void cpu_run(struct cpu *cpu)
 	while(cpu->pc != NULL)
 	{
 		current = cpu->pc;
+		instr_manager_print_instr(current, 1);
 		cpu_exec_instr(cpu, current);
 		cpu->pc = cpu->pc->next;
+		cpu_register_dump(cpu);
 	}
 
 }
@@ -55,6 +62,15 @@ void cpu_memdump(struct cpu *cpu)
 	}
 }
 
+void cpu_register_dump(struct cpu *cpu)
+{
+	int i;
+	for(i=0; i<NUM_REG; i++)
+	{
+		printf("%02d : %s : %08X\n", i, instr_int_to_reg(i), cpu->regs[i]);
+	}
+}
+
 void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 {
 
@@ -67,6 +83,10 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 
 		case AFC_INSTR:
 			cpu->memory[i->params[0]] = i->params[1];
+			break;
+
+		case AFC_REG_INSTR:
+			cpu->regs[i->params[0]] = i->params[1];
 			break;
 
 		case ADD_INSTR:
@@ -133,6 +153,11 @@ void cpu_exec_instr(struct cpu *cpu, struct instr *i)
 
 		case STOP_INSTR:
 			// stop everything !!!
+			break;
+
+		default:
+			printf("Unknown instruction\n");
+			exit(EXIT_FAILURE);
 			break;
 
 	}
